@@ -5,7 +5,7 @@ interface IHospital {
   address: string;
 }
 
-interface IDoctor extends Document {
+export interface IDoctor extends Document {
   name: string;
   specialty: string;
   username: string;
@@ -15,6 +15,7 @@ interface IDoctor extends Document {
   location: string;
   availability: string;
   hospital: IHospital;
+  photo:string,
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,6 +59,7 @@ const doctorSchema = new Schema<IDoctor>(
       name: { type: String, required: true },
       address: { type: String, required: true },
     },
+    photo:String,
   },
   { timestamps: true }
 );

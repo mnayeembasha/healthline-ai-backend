@@ -4,6 +4,8 @@ import { MONGO_URL, PORT } from './config';
 import cors from 'cors';
 import { connectDb } from './db';
 import doctorRouter from './routes/doctor';
+import userRouter from './routes/user';
+import opRouter from './routes/op';
 const app= express();
 app.use(express.json());
 connectDb(MONGO_URL as string);
@@ -15,7 +17,9 @@ const corsOptions = {
   };
   app.use(cors(corsOptions));
 
-app.use("/api/doctors",doctorRouter);
+app.use("/api/doctor",doctorRouter);
+app.use("/api/user",userRouter);
+app.use("/api/op",opRouter);
 
 
 app.get("/",(req,res)=>{
