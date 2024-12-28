@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { userModel } from "../db/models/user";
 import { JWT_USER_PASSWORD } from "../config";
 import { AuthenticatedRequest, isUserAuthenticated } from "../middleware/user";
+import { opModel } from "../db/models/op";
 
 const userRouter = express.Router();
 
@@ -87,13 +88,47 @@ userRouter.post("/signin", async (req: Request, res: Response):Promise<void> => 
 userRouter.get("/profile",isUserAuthenticated,async (req:AuthenticatedRequest,res:Response)=>{
   try{
     const user = await userModel.findById(req.user?.id);
-    res.status(200).json({message:"User Dashboard Page",user:user});
+    res.status(200).json({message:"User Profile",user:user});
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error", error });
   }
 });
 
+userRouter.get("/:userId/reports", isUserAuthenticated, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const {id:userId} = req.user?.id;
 
+    // Validate userId
+    if (!userId) {
+      res.status(400).json({ message: "Doctor ID is required." });
+      return;
+    }
 
+    // Fetch all reports associated with the doctor
+    const allReports = await opModel.find({ userId }).populate("userId", "username").exec();
 
+    if (!allReports.length) {
+      res.status(404).json({ message: "No reports found for the given doctor ID." });
+      return;
+    }
+
+    // Separate pending and solved reports
+    const pendingReports = allReports.filter((report) => report.status === "pending");
+    const solvedReports = allReports.filter((report) => report.status === "solved");
+
+    // Sort pending reports by severity in descending order
+    pendingReports.sort((a, b) => b.severity - a.severity);
+
+    // Respond with the data
+    res.status(200).json({
+      message: "Reports fetched successfully.",
+      reports: {
+        pending: pendingReports,
+        solved: solvedReports,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error", error: err });
+  }
+});
   export default userRouter;
