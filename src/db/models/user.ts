@@ -4,6 +4,7 @@ export interface IUser extends Document {
   username: string;
   password: string;
   photo: string;
+  location:string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +30,9 @@ const userSchema = new Schema<IUser>(
       minlength: [4, "Password must be at least 4 characters long."],
     },
     photo:{
+      type:String
+    },
+    location:{
       type:String
     }
   },

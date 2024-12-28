@@ -3,14 +3,14 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { userModel } from "../db/models/user";
 import { JWT_USER_PASSWORD } from "../config";
-import { isUserAuthenticated } from "../middleware/user";
+import { AuthenticatedRequest, isUserAuthenticated } from "../middleware/user";
 
 const userRouter = express.Router();
 
 // Route to sign up a new user
 userRouter.post("/signup", async (req: Request, res: Response):Promise<void> => {
   try {
-    const { username, password } = req.body;
+    const { username, password,photo,location } = req.body;
 
     // Validate request body
     if (!username || !password) {
@@ -28,7 +28,22 @@ userRouter.post("/signup", async (req: Request, res: Response):Promise<void> => 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create and save the user
+    if(photo && location){
+      const newUser = await userModel.create({ username, password: hashedPassword,photo,location });
+      res.status(201).json({ message: "User created successfully.", user: { username: newUser.username } });
+      return;
+    }
+    if(photo){
+      const newUser = await userModel.create({ username, password: hashedPassword,photo });
+      res.status(201).json({ message: "User created successfully.", user: { username: newUser.username } });
+      return;
+    }
+    if(location){
+      const newUser = await userModel.create({ username, password: hashedPassword,location });
+      res.status(201).json({ message: "User created successfully.", user: { username: newUser.username } });
+      return;
+    }
+    // If photo is not available
     const newUser = await userModel.create({ username, password: hashedPassword });
     res.status(201).json({ message: "User created successfully.", user: { username: newUser.username } });
   } catch (error) {
@@ -69,8 +84,10 @@ userRouter.post("/signin", async (req: Request, res: Response):Promise<void> => 
     res.status(500).json({ message: "Internal Server Error", error });
   }
 });
-userRouter.get("/dashboard",isUserAuthenticated,(req:Request,res:Response)=>{
-    res.status(200).json({message:"User Dashboard Page"});
-  })
+userRouter.get("/profile",isUserAuthenticated,(req:AuthenticatedRequest,res:Response)=>{
+    res.status(200).json({message:"User Dashboard Page",user:req.user});
+});
+
+
 
   export default userRouter;

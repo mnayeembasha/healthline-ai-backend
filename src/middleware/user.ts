@@ -33,7 +33,7 @@ export const isUserAuthenticated = (
 
     // Type guard to check if decodedData has the 'id' field
     if (typeof decodedData === "object" && "id" in decodedData) {
-      req.user = decodedData as JwtWithId; // Assign the decoded data to req.user
+      req.user = decodedData as JwtWithId;
       next();
     } else {
       res.status(401).json({
