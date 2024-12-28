@@ -84,9 +84,15 @@ userRouter.post("/signin", async (req: Request, res: Response):Promise<void> => 
     res.status(500).json({ message: "Internal Server Error", error });
   }
 });
-userRouter.get("/profile",isUserAuthenticated,(req:AuthenticatedRequest,res:Response)=>{
-    res.status(200).json({message:"User Dashboard Page",user:req.user});
+userRouter.get("/profile",isUserAuthenticated,async (req:AuthenticatedRequest,res:Response)=>{
+  try{
+    const user = await userModel.findById(req.user?.id);
+    res.status(200).json({message:"User Dashboard Page",user:user});
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
 });
+
 
 
 
